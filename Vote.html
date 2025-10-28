@@ -3,41 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduVote Kenya — Student Voting</title>
+  <title>EduVote Kenya — Test Voting Page</title>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background: #f7f9fc;
+      background: #f5f8ff;
       margin: 0;
       padding: 0;
     }
-
     header {
       background: #1b4d89;
       color: white;
-      padding: 15px;
       text-align: center;
+      padding: 15px;
       font-size: 22px;
       font-weight: bold;
     }
-
     .container {
-      max-width: 800px;
-      margin: 30px auto;
+      max-width: 700px;
+      margin: 40px auto;
       background: white;
-      padding: 25px 40px;
+      padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-
-    h2 {
-      color: #1b4d89;
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
     }
-
-    .position {
-      margin-bottom: 30px;
+    button {
+      background: #1b4d89;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
     }
-
+    button:hover {
+      background: #163e6f;
+    }
     .candidate {
       background: #f1f4f8;
       padding: 10px;
@@ -47,24 +53,9 @@
       justify-content: space-between;
       align-items: center;
     }
-
-    .candidate button {
-      background: #1b4d89;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .candidate button:hover {
-      background: #163e6f;
-    }
-
     .hidden {
       display: none;
     }
-
     #successMessage {
       background: #d4edda;
       color: #155724;
@@ -72,21 +63,20 @@
       border-radius: 6px;
       margin-top: 10px;
       display: none;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <header>
-    EduVote Kenya — Student Voting Portal
-  </header>
+  <header>EduVote Kenya — Test Voting</header>
 
   <div class="container">
     <h2>Vote Here</h2>
-    <p>Enter your school code to begin voting.</p>
-    <input type="text" id="schoolID" placeholder="Enter School Code (e.g., SCH001)" />
-    <button onclick="loadBallot()">Load Ballot</button>
+    <p>Enter your school code to load candidates:</p>
+    <input type="text" id="schoolID" placeholder="e.g., school001" />
+    <button onclick="loadPositions()">Load Positions</button>
 
-    <div id="ballotSection" class="hidden">
+    <div id="votingSection" class="hidden">
       <h3 id="schoolName"></h3>
       <div id="positionsList"></div>
       <div id="successMessage">✅ Vote recorded successfully!</div>
@@ -100,39 +90,33 @@
   <script>
     // Firebase Config
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "eduvote-kenya.firebaseapp.com",
-      databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
-      projectId: "eduvote-kenya",
-      storageBucket: "eduvote-kenya.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  apiKey: "AIzaSyD-s-QxMBVWkFVtAeJyfg7eblqPROv3k-I",
+  authDomain: "eduvote-kenya.firebaseapp.com",
+  databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+  projectId: "eduvote-kenya",
+  storageBucket: "eduvote-kenya.firebasestorage.app",
+  messagingSenderId: "564927373169",
+  appId: "1:564927373169:web:b9dbd74d1dbbe67a3be0d0"
+};
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function loadBallot() {
+    function loadPositions() {
       const schoolID = document.getElementById("schoolID").value.trim();
-      if (!schoolID) return alert("Enter a valid school code.");
-
+      if (!schoolID) return alert("Please enter a school code.");
+      
       const schoolRef = db.ref("schools/" + schoolID);
-
-      schoolRef.once("value", snapshot => {
+      schoolRef.once("value").then(snapshot => {
         const data = snapshot.val();
         if (!data) return alert("School not found.");
-        if (data.status !== "Approved") return alert("School is not approved for voting.");
+        if (data.status !== "Approved") return alert("This school is not approved for voting.");
 
         document.getElementById("schoolName").innerText = "Voting for " + data.schoolName;
-        document.getElementById("ballotSection").classList.remove("hidden");
+        document.getElementById("votingSection").classList.remove("hidden");
 
         const positionsDiv = document.getElementById("positionsList");
         positionsDiv.innerHTML = "";
-
-        if (!data.positions) {
-          positionsDiv.innerHTML = "<p>No positions available yet.</p>";
-          return;
-        }
 
         Object.keys(data.positions).forEach(posKey => {
           const pos = data.positions[posKey];
@@ -140,20 +124,16 @@
           posDiv.classList.add("position");
           posDiv.innerHTML = `<h3>${pos.name}</h3>`;
 
-          if (pos.candidates) {
-            Object.keys(pos.candidates).forEach(candKey => {
-              const cand = pos.candidates[candKey];
-              const candDiv = document.createElement("div");
-              candDiv.classList.add("candidate");
-              candDiv.innerHTML = `
-                <span>👤 ${cand.name}</span>
-                <button onclick="vote('${schoolID}', '${posKey}', '${candKey}')">Vote</button>
-              `;
-              posDiv.appendChild(candDiv);
-            });
-          } else {
-            posDiv.innerHTML += "<p>No candidates yet.</p>";
-          }
+          Object.keys(pos.candidates).forEach(candKey => {
+            const cand = pos.candidates[candKey];
+            const candDiv = document.createElement("div");
+            candDiv.classList.add("candidate");
+            candDiv.innerHTML = `
+              <span>👤 ${cand.name}</span>
+              <button onclick="vote('${schoolID}', '${posKey}', '${candKey}')">Vote</button>
+            `;
+            posDiv.appendChild(candDiv);
+          });
 
           positionsDiv.appendChild(posDiv);
         });
@@ -161,24 +141,17 @@
     }
 
     function vote(schoolID, posKey, candKey) {
-      // Prevent double voting — optional: use cookies or session storage
-      if (sessionStorage.getItem(`${schoolID}_${posKey}`)) {
-        alert("You have already voted for this position.");
-        return;
-      }
-
       const voteRef = db.ref(`schools/${schoolID}/positions/${posKey}/candidates/${candKey}/votes`);
-
       voteRef.transaction(votes => (votes || 0) + 1)
       .then(() => {
-        sessionStorage.setItem(`${schoolID}_${posKey}`, "voted");
         document.getElementById("successMessage").style.display = "block";
         setTimeout(() => {
           document.getElementById("successMessage").style.display = "none";
-        }, 2000);
+        }, 1500);
       })
       .catch(err => alert("Error recording vote: " + err));
     }
   </script>
 </body>
 </html>
+
