@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduVote Kenya — Results Dashboard</title>
+
+  <!-- Chart.js for Live Results -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f6f8fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1b4d89;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    select, button {
+      padding: 10px;
+      margin-right: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      background: #1b4d89;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #163e6f;
+    }
+
+    canvas {
+      margin-top: 20px;
+      width: 100%;
+      height: 400px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #555;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>EduVote Kenya — Live Results Dashboard</header>
+
+  <div class="container">
+    <h2>📊 View Real-Time Results</h2>
+
+    <label for="schoolSelect">Select School:</label>
+    <select id="schoolSelect" onchange="loadPositions()">
+      <option value="">-- Choose School --</option>
+    </select>
+
+    <label for="positionSelect">Position:</label>
+    <select id="positionSelect" onchange="showResults()">
+      <option value="">-- Choose Position --</option>
+    </select>
+
+    <canvas id="resultsChart"></canvas>
+
+    <div class="footer">Powered by EduVote Kenya © 2025</div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+  <script>
+    // Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "eduvote-kenya.firebaseapp.com",
+      databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+      projectId: "eduvote-kenya",
+      storageBucket: "eduvote-kenya.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let chart; // Chart instance for updates
+
+    // Load all approved schools
+    function loadSchools() {
+      const schoolSelect = document.getElementById("schoolSelect");
+      db.ref("schools").once("value", snapshot => {
+        snapshot.forEach(snap => {
+          const data = snap.val();
+          if (data.status === "Approved") {
+            const opt = document.createElement("option");
+            opt.value = snap.key;
+            opt.text = data.schoolName;
+            schoolSelect.appendChild(opt);
+          }
+        });
+      });
+    }
+
+    // Load positions for selected school
+    function loadPositions() {
+      const schoolID = document.getElementById("schoolSelect").value;
+      const positionSelect = document.getElementById("positionSelect");
+      positionSelect.innerHTML = '<option value="">-- Choose Position --</option>';
+
+      if (!schoolID) return;
+
+      db.ref("schools/" + schoolID + "/positions").once("value", snapshot => {
+        snapshot.forEach(posSnap => {
+          const pos = posSnap.val();
+          const opt = document.createElement("option");
+          opt.value = posSnap.key;
+          opt.text = pos.name;
+          positionSelect.appendChild(opt);
+        });
+      });
+    }
+
+    // Display live results chart
+    function showResults() {
+      const schoolID = document.getElementById("schoolSelect").value;
+      const posKey = document.getElementById("positionSelect").value;
+
+      if (!schoolID || !posKey) return;
+
+      db.ref(`schools/${schoolID}/positions/${posKey}/candidates`).on("value", snapshot => {
+        const names = [];
+        const votes = [];
+
+        snapshot.forEach(candSnap => {
+          const cand = candSnap.val();
+          names.push(cand.name);
+          votes.push(cand.votes || 0);
+        });
+
+        updateChart(names, votes);
+      });
+    }
+
+    // Update or create chart
+    function updateChart(names, votes) {
+      const ctx = document.getElementById("resultsChart").getContext("2d");
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: names,
+          datasets: [{
+            label: "Votes",
+            data: votes,
+            backgroundColor: "#1b4d89"
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Start loading data
+    loadSchools();
+  </script>
+</body>
+</html>

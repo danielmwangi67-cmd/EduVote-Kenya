@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduVote Kenya — Student Voting</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1b4d89;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #1b4d89;
+    }
+
+    .position {
+      margin-bottom: 30px;
+    }
+
+    .candidate {
+      background: #f1f4f8;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .candidate button {
+      background: #1b4d89;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .candidate button:hover {
+      background: #163e6f;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #successMessage {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    EduVote Kenya — Student Voting Portal
+  </header>
+
+  <div class="container">
+    <h2>Vote Here</h2>
+    <p>Enter your school code to begin voting.</p>
+    <input type="text" id="schoolID" placeholder="Enter School Code (e.g., SCH001)" />
+    <button onclick="loadBallot()">Load Ballot</button>
+
+    <div id="ballotSection" class="hidden">
+      <h3 id="schoolName"></h3>
+      <div id="positionsList"></div>
+      <div id="successMessage">✅ Vote recorded successfully!</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "eduvote-kenya.firebaseapp.com",
+      databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+      projectId: "eduvote-kenya",
+      storageBucket: "eduvote-kenya.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function loadBallot() {
+      const schoolID = document.getElementById("schoolID").value.trim();
+      if (!schoolID) return alert("Enter a valid school code.");
+
+      const schoolRef = db.ref("schools/" + schoolID);
+
+      schoolRef.once("value", snapshot => {
+        const data = snapshot.val();
+        if (!data) return alert("School not found.");
+        if (data.status !== "Approved") return alert("School is not approved for voting.");
+
+        document.getElementById("schoolName").innerText = "Voting for " + data.schoolName;
+        document.getElementById("ballotSection").classList.remove("hidden");
+
+        const positionsDiv = document.getElementById("positionsList");
+        positionsDiv.innerHTML = "";
+
+        if (!data.positions) {
+          positionsDiv.innerHTML = "<p>No positions available yet.</p>";
+          return;
+        }
+
+        Object.keys(data.positions).forEach(posKey => {
+          const pos = data.positions[posKey];
+          const posDiv = document.createElement("div");
+          posDiv.classList.add("position");
+          posDiv.innerHTML = `<h3>${pos.name}</h3>`;
+
+          if (pos.candidates) {
+            Object.keys(pos.candidates).forEach(candKey => {
+              const cand = pos.candidates[candKey];
+              const candDiv = document.createElement("div");
+              candDiv.classList.add("candidate");
+              candDiv.innerHTML = `
+                <span>👤 ${cand.name}</span>
+                <button onclick="vote('${schoolID}', '${posKey}', '${candKey}')">Vote</button>
+              `;
+              posDiv.appendChild(candDiv);
+            });
+          } else {
+            posDiv.innerHTML += "<p>No candidates yet.</p>";
+          }
+
+          positionsDiv.appendChild(posDiv);
+        });
+      });
+    }
+
+    function vote(schoolID, posKey, candKey) {
+      // Prevent double voting — optional: use cookies or session storage
+      if (sessionStorage.getItem(`${schoolID}_${posKey}`)) {
+        alert("You have already voted for this position.");
+        return;
+      }
+
+      const voteRef = db.ref(`schools/${schoolID}/positions/${posKey}/candidates/${candKey}/votes`);
+
+      voteRef.transaction(votes => (votes || 0) + 1)
+      .then(() => {
+        sessionStorage.setItem(`${schoolID}_${posKey}`, "voted");
+        document.getElementById("successMessage").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("successMessage").style.display = "none";
+        }, 2000);
+      })
+      .catch(err => alert("Error recording vote: " + err));
+    }
+  </script>
+</body>
+</html>

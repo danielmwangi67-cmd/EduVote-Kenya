@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduVote Kenya — Admin Panel</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #1b4d89;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #1b4d89;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+    }
+    .approve {
+      background-color: #27ae60;
+    }
+    .reject {
+      background-color: #e74c3c;
+    }
+    .refresh {
+      background-color: #1b4d89;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>EduVote Kenya — Admin Control Panel</h1>
+  <button class="refresh" onclick="loadSchools()">🔄 Refresh List</button>
+
+  <table id="schoolsTable">
+    <thead>
+      <tr>
+        <th>School ID</th>
+        <th>School Name</th>
+        <th>County</th>
+        <th>Contact Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Students</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+  <script>
+    // Firebase Configuration (same as your Register.html)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "eduvote-kenya.firebaseapp.com",
+      databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+      projectId: "eduvote-kenya",
+      storageBucket: "eduvote-kenya.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Load all schools
+    function loadSchools() {
+      const tbody = document.querySelector("#schoolsTable tbody");
+      tbody.innerHTML = "<tr><td colspan='9'>Loading...</td></tr>";
+
+      db.ref("schools").once("value", snapshot => {
+        tbody.innerHTML = ""; // clear old data
+        snapshot.forEach(child => {
+          const data = child.val();
+          const row = `
+            <tr>
+              <td>${child.key}</td>
+              <td>${data.schoolName || "-"}</td>
+              <td>${data.county || "-"}</td>
+              <td>${data.contactName || "-"}</td>
+              <td>${data.phone || "-"}</td>
+              <td>${data.email || "-"}</td>
+              <td>${data.students || "-"}</td>
+              <td id="status-${child.key}">${data.status || "Pending"}</td>
+              <td>
+                <button class="approve" onclick="updateStatus('${child.key}', 'Approved')">Approve</button>
+                <button class="reject" onclick="updateStatus('${child.key}', 'Rejected')">Reject</button>
+              </td>
+            </tr>`;
+          tbody.innerHTML += row;
+        });
+      });
+    }
+
+    // Approve or Reject school
+    function updateStatus(schoolID, status) {
+      db.ref("schools/" + schoolID).update({ status })
+        .then(() => {
+          document.getElementById("status-" + schoolID).innerText = status;
+          alert(`✅ School ${schoolID} marked as ${status}`);
+        })
+        .catch(error => alert("Error updating status: " + error.message));
+    }
+
+    // Load data immediately
+    loadSchools();
+  </script>
+</body>
+</html>

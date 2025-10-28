@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduVote Kenya — School Login</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      text-align: center;
+    }
+    h1 {
+      color: #1b4d89;
+      margin-bottom: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #1b4d89;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #163e6f;
+    }
+    p.message {
+      margin-top: 12px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h1>EduVote Login</h1>
+    <input type="text" id="schoolID" placeholder="School ID (e.g. SCH001)" required>
+    <input type="text" id="phone" placeholder="Phone Number" required>
+    <button onclick="loginSchool()">Login</button>
+    <p id="statusMessage" class="message"></p>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+  <script>
+    // Firebase configuration (same as your other files)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "eduvote-kenya.firebaseapp.com",
+      databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+      projectId: "eduvote-kenya",
+      storageBucket: "eduvote-kenya.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function loginSchool() {
+      const schoolID = document.getElementById("schoolID").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const statusMessage = document.getElementById("statusMessage");
+
+      if (!schoolID || !phone) {
+        statusMessage.innerText = "⚠️ Please fill in both fields.";
+        return;
+      }
+
+      db.ref("schools/" + schoolID).once("value", snapshot => {
+        if (!snapshot.exists()) {
+          statusMessage.innerText = "❌ School ID not found.";
+          return;
+        }
+
+        const data = snapshot.val();
+        if (data.phone !== phone) {
+          statusMessage.innerText = "⚠️ Phone number does not match our records.";
+          return;
+        }
+
+        if (data.status !== "Approved") {
+          statusMessage.innerText = "⏳ Your registration is still pending approval.";
+          return;
+        }
+
+        // Success
+        statusMessage.innerText = "✅ Login successful! Redirecting...";
+        setTimeout(() => {
+          // Redirect to school dashboard (next phase)
+          window.location.href = "Dashboard.html?schoolID=" + schoolID;
+        }, 1500);
+      });
+    }
+  </script>
+
+</body>
+</html>

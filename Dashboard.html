@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduVote Kenya — School Dashboard</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1b4d89;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #1b4d89;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 5px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #1b4d89;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #163e6f;
+    }
+
+    .card {
+      background: #f9f9f9;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+
+    .logout {
+      background: #d9534f;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    EduVote Kenya — School Dashboard
+  </header>
+
+  <div class="container">
+    <h2 id="schoolName">Welcome, School</h2>
+    <button class="logout" onclick="logout()">Logout</button>
+
+    <h3>Add Election Position</h3>
+    <input type="text" id="positionName" placeholder="e.g. Head Boy" />
+    <button onclick="addPosition()">Add Position</button>
+
+    <div id="positionsList"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "eduvote-kenya.firebaseapp.com",
+      databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+      projectId: "eduvote-kenya",
+      storageBucket: "eduvote-kenya.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Get schoolID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const schoolID = urlParams.get("schoolID");
+    const schoolNameElem = document.getElementById("schoolName");
+
+    if (!schoolID) {
+      alert("Invalid access. Please login first.");
+      window.location.href = "Login.html";
+    }
+
+    // Load school data
+    db.ref("schools/" + schoolID).once("value", snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        schoolNameElem.innerText = "Welcome, " + data.schoolName;
+      }
+    });
+
+    // Add position
+    function addPosition() {
+      const positionName = document.getElementById("positionName").value.trim();
+      if (!positionName) return alert("Enter a position name.");
+
+      const newRef = db.ref(`schools/${schoolID}/positions`).push();
+      newRef.set({
+        name: positionName,
+        candidates: {}
+      });
+
+      document.getElementById("positionName").value = "";
+      loadPositions();
+    }
+
+    // Load positions
+    function loadPositions() {
+      const listDiv = document.getElementById("positionsList");
+      listDiv.innerHTML = "";
+
+      db.ref(`schools/${schoolID}/positions`).on("value", snapshot => {
+        listDiv.innerHTML = "<h3>Positions Added:</h3>";
+        snapshot.forEach(pos => {
+          const p = pos.val();
+          const card = document.createElement("div");
+          card.classList.add("card");
+          card.innerHTML = `
+            <b>${p.name}</b><br>
+            <button onclick="addCandidate('${pos.key}')">Add Candidate</button>
+            <div id="cand-${pos.key}"></div>
+          `;
+          listDiv.appendChild(card);
+          loadCandidates(pos.key);
+        });
+      });
+    }
+
+    // Add candidate
+    function addCandidate(positionKey) {
+      const candidateName = prompt("Enter candidate name:");
+      if (!candidateName) return;
+
+      db.ref(`schools/${schoolID}/positions/${positionKey}/candidates`).push({
+        name: candidateName,
+        votes: 0
+      });
+
+      loadCandidates(positionKey);
+    }
+
+    // Load candidates
+    function loadCandidates(positionKey) {
+      const div = document.getElementById("cand-" + positionKey);
+      div.innerHTML = "";
+
+      db.ref(`schools/${schoolID}/positions/${positionKey}/candidates`).on("value", snap => {
+        snap.forEach(c => {
+          const cand = c.val();
+          div.innerHTML += `<div>👤 ${cand.name} — Votes: ${cand.votes}</div>`;
+        });
+      });
+    }
+
+    // Logout
+    function logout() {
+      window.location.href = "Login.html";
+    }
+
+    loadPositions();
+  </script>
+</body>
+</html>
