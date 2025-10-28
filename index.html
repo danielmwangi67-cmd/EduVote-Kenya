@@ -12,10 +12,29 @@
       background: linear-gradient(to right, #1b4d89, #007bff);
       color: white;
       text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     header {
       padding: 40px 20px;
+    }
+
+    .logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1b4d89;
+      font-weight: bold;
+      font-size: 28px;
+      margin: 0 auto 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     header h1 {
@@ -26,7 +45,7 @@
 
     header p {
       font-size: 18px;
-      color: #f1f1f1;
+      color: #e8e8e8;
       max-width: 600px;
       margin: 0 auto;
     }
@@ -51,7 +70,7 @@
       font-size: 18px;
       font-weight: 600;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: all 0.3s;
+      transition: all 0.3s ease;
     }
 
     .btn:hover {
@@ -60,29 +79,62 @@
       transform: scale(1.05);
     }
 
+    section.about {
+      background: white;
+      color: #1b4d89;
+      padding: 60px 20px;
+      border-top-left-radius: 50px;
+      border-top-right-radius: 50px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+    }
+
+    section.about h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    section.about p {
+      font-size: 17px;
+      max-width: 750px;
+      margin: 0 auto;
+      color: #333;
+      line-height: 1.6;
+    }
+
     footer {
-      margin-top: 80px;
-      padding: 20px;
+      padding: 15px;
       font-size: 14px;
-      background: rgba(255,255,255,0.1);
+      color: #f1f1f1;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🎓 EduVote Kenya</h1>
+    <div class="logo">EV</div>
+    <h1>EduVote Kenya</h1>
     <p>Empowering schools across Kenya with a transparent, digital voting system for student leadership elections.</p>
+
+    <div class="buttons">
+      <a href="Register.html" class="btn">🏫 School Registration</a>
+      <a href="Login.html" class="btn">🔐 School Login</a>
+      <a href="Vote.html" class="btn">🗳 Student Voting</a>
+      <a href="Results.html" class="btn">📊 View Results</a>
+    </div>
   </header>
 
-  <div class="buttons">
-    <a href="Register.html" class="btn">🏫 School Registration</a>
-    <a href="Login.html" class="btn">🔐 School Login</a>
-    <a href="Vote.html" class="btn">🗳 Student Voting</a>
-    <a href="Results.html" class="btn">📊 View Results</a>
-  </div>
+  <section class="about">
+    <h2>About EduVote Kenya</h2>
+    <p>
+      EduVote Kenya is a digital platform designed to modernize school elections across the country. 
+      It simplifies the entire election process — from registration and candidate nomination to student voting 
+      and real-time results display. By reducing paperwork and ensuring transparency, EduVote empowers students 
+      to experience democratic participation in a secure, tech-driven environment.
+    </p>
+  </section>
 
   <footer>
-    © 2025 EduVote Kenya — Designed by Daniel Mwangi
+    © 2025 EduVote Kenya — Designed & Managed by Daniel Mwangi
   </footer>
 </body>
 </html>
+
