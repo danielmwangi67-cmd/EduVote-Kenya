@@ -3,138 +3,257 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduVote Kenya — Digital School Elections</title>
+  <title>EduVote Kenya — Smart Digital Voting for Schools</title>
+
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: "Poppins", sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(to right, #1b4d89, #007bff);
-      color: white;
-      text-align: center;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      background: #f9fafc;
+      color: #333;
     }
 
     header {
-      padding: 40px 20px;
-    }
-
-    .logo {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #1b4d89;
-      font-weight: bold;
+      background: #1b4d89;
+      color: white;
+      text-align: center;
+      padding: 20px;
       font-size: 28px;
-      margin: 0 auto 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    header h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
+      font-weight: bold;
       letter-spacing: 1px;
     }
 
-    header p {
-      font-size: 18px;
-      color: #e8e8e8;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .buttons {
-      margin-top: 50px;
+    nav {
+      background: #163e6f;
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
+      gap: 30px;
+      padding: 10px 0;
     }
 
-    a {
-      text-decoration: none;
-    }
-
-    .btn {
-      background: white;
-      color: #1b4d89;
-      padding: 15px 25px;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: 600;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-    }
-
-    .btn:hover {
-      background: #163e6f;
+    nav a {
       color: white;
-      transform: scale(1.05);
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
     }
 
-    section.about {
-      background: white;
+    nav a:hover {
+      color: #ffd700;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 80px 20px;
+      background: linear-gradient(to right, #1b4d89, #2b68b1);
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto 25px;
+    }
+
+    .hero button {
+      background: #ffd700;
       color: #1b4d89;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .hero button:hover {
+      background: white;
+    }
+
+    .about {
       padding: 60px 20px;
-      border-top-left-radius: 50px;
-      border-top-right-radius: 50px;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
-    section.about h2 {
+    .about h2 {
+      color: #1b4d89;
       font-size: 28px;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
-    section.about p {
-      font-size: 17px;
-      max-width: 750px;
+    .about p {
+      max-width: 700px;
       margin: 0 auto;
-      color: #333;
-      line-height: 1.6;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* ===== Live Feed Section ===== */
+    .feed {
+      padding: 50px 20px;
+      background: #f8f8f8;
+      color: #1b4d89;
+    }
+
+    .feed h2 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .feed-container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: left;
+    }
+
+    .feed-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+
+    .feed-item:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .active {
+      background: #28a745;
+    }
+
+    .closed {
+      background: #6c757d;
     }
 
     footer {
+      background: #1b4d89;
+      color: white;
+      text-align: center;
       padding: 15px;
       font-size: 14px;
-      color: #f1f1f1;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 {
+        font-size: 32px;
+      }
+      nav {
+        flex-wrap: wrap;
+        gap: 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">EV</div>
-    <h1>EduVote Kenya</h1>
-    <p>Empowering schools across Kenya with a transparent, digital voting system for student leadership elections.</p>
 
-    <div class="buttons">
-      <a href="Register.html" class="btn">🏫 School Registration</a>
-      <a href="Login.html" class="btn">🔐 School Login</a>
-      <a href="Vote.html" class="btn">🗳 Student Voting</a>
-      <a href="Results.html" class="btn">📊 View Results</a>
-    </div>
-  </header>
+  <header>EduVote Kenya</header>
+
+  <nav>
+    <a href="#">Home</a>
+    <a href="schools.html">Schools</a>
+    <a href="results.html">Results</a>
+    <a href="about.html">About</a>
+  </nav>
+
+  <section class="hero">
+    <h1>Smart Digital Voting for Schools</h1>
+    <p>Empowering Kenyan schools with a modern, secure, and transparent election system — built for fairness and speed.</p>
+    <button onclick="window.location.href='schools.html'">Get Started</button>
+  </section>
 
   <section class="about">
     <h2>About EduVote Kenya</h2>
     <p>
-      EduVote Kenya is a digital platform designed to modernize school elections across the country. 
-      It simplifies the entire election process — from registration and candidate nomination to student voting 
-      and real-time results display. By reducing paperwork and ensuring transparency, EduVote empowers students 
-      to experience democratic participation in a secure, tech-driven environment.
+      EduVote Kenya is a digital voting platform that allows schools to conduct
+      student elections with transparency, real-time results, and zero paper waste.
+      Schools can register, manage positions, and monitor results easily — all online.
     </p>
   </section>
 
+  <!-- 🟢 Live Elections Feed Section -->
+  <section class="feed">
+    <h2>🟢 Latest Elections</h2>
+    <div id="liveFeed" class="feed-container">
+      <p>Loading live updates...</p>
+    </div>
+  </section>
+
   <footer>
-    © 2025 EduVote Kenya — Designed & Managed by Daniel Mwangi
+    Powered by EduVote Kenya © 2025
   </footer>
+
+  <!-- Firebase Configuration & Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+
+    // ✅ Replace these with your Firebase configuration
+    const firebaseConfig = {
+  apiKey: "AIzaSyD-s-QxMBVWkFVtAeJyfg7eblqPROv3k-I",
+  authDomain: "eduvote-kenya.firebaseapp.com",
+  databaseURL: "https://eduvote-kenya-default-rtdb.firebaseio.com",
+  projectId: "eduvote-kenya",
+  storageBucket: "eduvote-kenya.firebasestorage.app",
+  messagingSenderId: "564927373169",
+  appId: "1:564927373169:web:b9dbd74d1dbbe67a3be0d0"
+};
+    
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const feedRef = ref(db, "schools/");
+    const feedContainer = document.getElementById("liveFeed");
+
+    onValue(feedRef, (snapshot) => {
+      const data = snapshot.val();
+      feedContainer.innerHTML = "";
+
+      if (data) {
+        Object.keys(data).forEach((schoolId) => {
+          const school = data[schoolId];
+          const name = school.schoolName || "Unnamed School";
+          const date = school.lastElectionDate || "No recent election";
+          const status = school.electionStatus || "Closed";
+          const total = school.totalPositions || 0;
+
+          const badgeClass = status === "Active" ? "active" : "closed";
+
+          const div = document.createElement("div");
+          div.classList.add("feed-item");
+          div.innerHTML = `
+            <strong>${name}</strong><br>
+            <small>🗓 ${date} | Positions: ${total} 
+            <span class="badge ${badgeClass}">${status}</span></small>
+          `;
+          feedContainer.appendChild(div);
+        });
+      } else {
+        feedContainer.innerHTML = "<p>No elections recorded yet.</p>";
+      }
+    });
+  </script>
+
 </body>
 </html>
+
 
